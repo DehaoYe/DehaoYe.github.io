@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>CRTP-奇异递归模板模式 | DehaoYe</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://dehaoye.github.io/favicon.ico?v=1586198738863">
+<link rel="stylesheet" href="https://dehaoye.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="第一次接触CRTP是在看到enable_shared_from_this的时候，手淡定地搜索相关关键词，但内心慌的一匹，“这是啥啊？抱歉，我真的学不动了&gt;.&lt;”。
+不过一回生两回熟，在多次遇见他之后，紧张缓解之余便可以渐渐感觉到..." />
+    <meta name="keywords" content="cpp" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://dehaoye.github.io">
+        <img src="https://dehaoye.github.io/images/avatar.png?v=1586198738863" class="site-logo">
+        <h1 class="site-title">DehaoYe</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      简单的记录，系统的思考
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://dehaoye.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">CRTP-奇异递归模板模式</h2>
+            <div class="post-date">2020-01-30</div>
+            
+            <div class="post-content" v-pre>
+              <p>第一次接触CRTP是在看到<code>enable_shared_from_this</code>的时候，手淡定地搜索相关关键词，但内心慌的一匹，“这是啥啊？抱歉，我真的学不动了&gt;.&lt;”。<br>
+不过一回生两回熟，在多次遇见他之后，紧张缓解之余便可以渐渐感觉到这个概念存在的意义，不由地再一次感叹前人的智慧。</p>
+<h1 id="crtp的两大作用">CRTP的两大作用</h1>
+<h2 id="作用一静态多态">作用一：静态多态</h2>
+<h3 id="多态">多态</h3>
+<p>多态，刚接触时是一个很抽象的概念，因为很难从字面上直接解读这个词是什么意思。以下是多态在wiki上的定义</p>
+<blockquote>
+<p>多态指为不同数据类型的实体提供统一的接口</p>
+</blockquote>
+<p>这样看其实就很好理解了，就是说调用者和被调用者之间已经协商好了一系列的统一的接口，被调用者会实现并封装成刚开始约定时候的样子，这样调用者不需要轻易的改动就可以直接调用不同类型的对象了。但是C++作为强类型，很难有Python那样的灵活性，也没有Golang中interface的支持，无法直接实现多态。好在有了虚函数机制和模板让我们也能够达到多态的目的。 我们强调一下调用者这个概念，在本文里调用接口的一方都可以视为是调用者。根据调用者的不同，我们可以实现不同的多态。</p>
+<h3 id="动态多态">动态多态</h3>
+<p>假如我们的调用者是某个类或者函数，我们就可以使用虚函数+父类指针这套方案达到目的。因为虚函数机制能够实现动态查找并执行派生类的函数。所以显而易见只要我们将接口内容放在父类，每个类去继承这个父类就可以并完成相应的虚函数，就可以达到目的了。由于这种多态需要动态查找，所以称之为<strong>动态多态</strong>。</p>
+<pre><code class="language-cpp">struct Base {
+    virtual void listen() = 0;
+};
+struct Derive1: public Base {
+    void listen() override { /* ... */}
+};
+struct Derive2: public Base {
+    void listen() override { /* ... */}
+};
+void fun(Base* p) { p-&gt;listen(); } //调用者fun直接可以调用统一的接口
+</code></pre>
+<h3 id="静态多态">静态多态</h3>
+<p>静态多态的关键在于认识到调用者指的是写程序的人，或者说是某个函数库的调用者。动态指的是程序运行的时候，那静态就是编译的时候咯。那么我们写程序的时候都希望某个类可以有统一的接口，这样我们就可以无脑调用了，这样看也就是实现多态需要做的事。<br>
+说到这里可能我们很快就会想到用模板！对，没错，只要用了模板我们就可以有统一的接口了。但是，在实际写程序的时候，你的接口可能是需要随时改变的，或者说你可能只需要实现<strong>部分的接口</strong>，显然直接使用模板就不行了。<br>
+那么就用继承吧！把一套接口切分成各个子集，并用模板实现，想用的哪些接口就继承对应的模板就好了！</p>
+<pre><code class="language-cpp">template&lt;typename Invoker&gt;
+struct TemplateWithListen {
+    void listen() { 
+        Invoker *p = static_cast&lt;Invoker*&gt;(this);
+        /* 这里假设用到了Invoker中的各个属性*/
+        }
+};
+template&lt;typename Invoker&gt;
+struct TemplateWithSpeak {
+    void speak() { 
+        Invoker *p = static_cast&lt;Invoker*&gt;(this);
+        /* 这里假设用到了Invoker中的各个属性*/
+        }
+};
+class Invoker : public TemplateWithSpeak&lt;Invoker&gt;, TemplateWithListen&lt;Invoker&gt;
+{ };
+</code></pre>
+<p>这样我们就可以实现了两个接口。虽然在程序执行时还是不能像动态多态一样完成当成同一个类，但是在编译时对编译器而言他们都具有相同的接口，即使是不同类型，这也就完成了多态的要求。将需要的接口放在一个模板里更像一种插件，想用哪个就继承哪个，非常直接。</p>
+<h2 id="作用二写更少的冗余代码">作用二：写更少的冗余代码</h2>
+<p>其实在上面介绍静态多态的时候我们就可以发现了，模板内接口的实现需要依赖一部分共同的接口（无论是变量还是函数）。那么说我们就可以实现几个最基本的接口在各自的类中，将各个基本接口的组合信息放在模板里，这样只要一继承就可以自动拥有这些接口啦！很lazy很优雅！<br>
+让我们来举个简单的例子</p>
+<pre><code class="language-cpp">struct KeyClass {}; 
+bool operator&lt; (KeyClass&amp; k1, KeyClass&amp; k2) { /*...*/}
+bool operator&gt; (KeyClass&amp; k1, KeyClass&amp; k2) { /*...*/}
+</code></pre>
+<p>这是一个键值类,我们已经实现了对应的大于小于的运算符，但是远远不够啊，我们可能还需不等于、等于之类的运算符，但是重新写其实就是copy然后小改，感觉不太酷。而且如果我们要写其他的键值类，岂不是又要重新写一遍？如果使用父类指针，好像也不行喔，比较的时候谁拿他本身的指针比的呀！这时候就可以祭出我们的模板了！</p>
+<pre><code class="language-cpp">template&lt;class Derived&gt;
+class Equality{};
+
+template &lt;class Derived&gt;
+bool operator == (Equality&lt;Derived&gt; const&amp; op1, Equality&lt;Derived&gt; const &amp; op2){
+  Derived const&amp; d1 = static_cast&lt;Derived const&amp;&gt;(op1);     
+  Derived const&amp; d2 = static_cast&lt;Derived const&amp;&gt;(op2); 
+  return !(d1 &lt; d2) &amp;&amp; !(d2 &lt; d1);
+}
+</code></pre>
+<p>只要我们的键值类继承这个模板类就可以了，让编译器帮我们生成这些方法，也就是代码（咦，生成代码，这岂不就是元编程吗！）</p>
+<h1 id="勇敢面对enable_shared_from_this">勇敢面对enable_shared_from_this</h1>
+<p>经过上面的梳理，我们看到这个模板类就已经很亲切了，它无非就是帮助继承它的类实现某项功能，而且这个功能的实现你是不需要去管的，就可以完成当作是自带的一种方法。<br>
+但是好奇的我们绝对不会止于此，这个功能是啥呢？</p>
+<blockquote>
+<p>就是可以让你可以返回一个指向自己的shared_ptr</p>
+</blockquote>
+<p><strong>噢，这样啊，那为啥不能直接<code>retrun shared_ptr&lt;MyClass&gt;(this)</code>呢？</strong><br>
+注意了，这里使用了原生指针初始化shared_ptr，是一个非常致命的错误，这个在后面会提到。这个函数调用之后会返回shared_ptr这个确实没错，但是如果你调用两次呢？！前后两次的shard_ptr不共享引用计数呀！因为你每次都是使用原生指针初始化，他们分别有自己的控制块。这就很容易造成一个对象被重复析构多次！</p>
+<p><strong>道理我都懂，那为啥要返回指向自己的shared_ptr呢？</strong><br>
+以下是我个人的猜想了。使用函数的形式更符合我们的一种逻辑感强调了一种行为的发生，所以才没有直接使用<code>=</code>等号的形式。</p>
+<p><strong>那如果返回this，原生指针？</strong><br>
+那就非常危险了。因为当你在使用智能指针管理对象所有权的那一刻起，你就不能人为的决定对象的生存周期了，他有可能随时会释放，如果this指针暴露给其他使用者，那么很有可能这个指针会随时变为野指针。</p>
+<h1 id="结尾">结尾</h1>
+<p>不知不觉唠叨了很多，其实在多说废话的同时也是逐渐整理自己思维的时候。最近一直觉得好的思维不是天才式的跳跃性，而不是像溪流一样连续缓和，至少这样你才能一步一步走的实在。</p>
+<h1 id="参考">参考</h1>
+<ul>
+<li><a href="https://www.modernescpp.com/index.php/c-is-still-lazy">简单直接的CRTP介绍</a></li>
+<li><a href="http://senlinzhan.github.io/2015/04/24/%E6%B7%B1%E5%85%A5shared-ptr/">总结了一些shared_ptr的坑</a></li>
+</ul>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://dehaoye.github.io/tag/PlUe8uvLg/" class="tag">
+                    cpp
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://dehaoye.github.io/post/xu/">
+                  <h3 class="post-title">
+                    序
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>
