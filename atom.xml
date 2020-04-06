@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://dehaoye.github.io</id>
     <title>Gridea</title>
-    <updated>2020-04-05T19:03:08.215Z</updated>
+    <updated>2020-04-06T15:21:00.369Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://dehaoye.github.io"/>
     <link rel="self" href="https://dehaoye.github.io/atom.xml"/>
@@ -10,6 +10,20 @@
     <logo>https://dehaoye.github.io/images/avatar.png</logo>
     <icon>https://dehaoye.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, Gridea</rights>
+    <entry>
+        <title type="html"><![CDATA[序]]></title>
+        <id>https://dehaoye.github.io/post/xu/</id>
+        <link href="https://dehaoye.github.io/post/xu/">
+        </link>
+        <updated>2020-01-18T15:13:24.000Z</updated>
+        <summary type="html"><![CDATA[<p>开始记录啦！</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>开始记录啦！</p>
+<!-- more -->
+<pre><code>很久前就一直打算建个自己的博客了，但是一直碍于前端方面的东西对我来说比较晦涩（其实就是懒），一直拖了很久。其实平时很多时候都会有记录的习惯，但是大多数时候都放在了有道云，而且写的也比较乱比较随意。但是现在有这个机会了也就想把以前的东西拿出来放在这里，毕竟重新整理的过程也是个重新审视自己的过程。
+废话不多说！日常感悟以后慢慢补吧！</code></pre>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Hello Gridea]]></title>
         <id>https://dehaoye.github.io/post/hello-gridea/</id>
