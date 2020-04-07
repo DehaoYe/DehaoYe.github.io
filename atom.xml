@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://dehaoye.github.io</id>
     <title>DehaoYe</title>
-    <updated>2020-04-06T18:48:58.527Z</updated>
+    <updated>2020-04-07T06:27:59.027Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://dehaoye.github.io"/>
     <link rel="self" href="https://dehaoye.github.io/atom.xml"/>
@@ -10,6 +10,17 @@
     <logo>https://dehaoye.github.io/images/avatar.png</logo>
     <icon>https://dehaoye.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, DehaoYe</rights>
+    <entry>
+        <title type="html"><![CDATA[网络编程的总结与思考]]></title>
+        <id>https://dehaoye.github.io/post/wang-luo-bian-cheng-de-zong-jie-yu-si-kao/</id>
+        <link href="https://dehaoye.github.io/post/wang-luo-bian-cheng-de-zong-jie-yu-si-kao/">
+        </link>
+        <updated>2020-03-02T02:46:11.000Z</updated>
+        <summary type="html"><![CDATA[<p>陈硕老师书中提到的TCP网络编程本质论很简洁直接地归纳了网络编程需要做的事，许许多多网络编程中的坑都可以归纳到这个本质论内。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>陈硕老师书中提到的TCP网络编程本质论很简洁直接地归纳了网络编程需要做的事，许许多多网络编程中的坑都可以归纳到这个本质论内。</p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[CRTP-奇异递归模板模式]]></title>
         <id>https://dehaoye.github.io/post/crtp-qi-yi-di-gui-mo-ban-mo-shi/</id>

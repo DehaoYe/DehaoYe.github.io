@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>网络编程的总结与思考 | DehaoYe</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://dehaoye.github.io/favicon.ico?v=1586240829635">
+<link rel="stylesheet" href="https://dehaoye.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="陈硕老师书中提到的TCP网络编程本质论很简洁直接地归纳了网络编程需要做的事，许许多多网络编程中的坑都可以归纳到这个本质论内。
+
+最近也在进一步的学习网络编程，偶然间再一次看到『TCP网络编程本质论』，突然觉得这个概括能将目前学到的东西进行很..." />
+    <meta name="keywords" content="网络编程" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://dehaoye.github.io">
+        <img src="https://dehaoye.github.io/images/avatar.png?v=1586240829635" class="site-logo">
+        <h1 class="site-title">DehaoYe</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      简单的记录，系统的思考
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://dehaoye.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">网络编程的总结与思考</h2>
+            <div class="post-date">2020-03-02</div>
+            
+            <div class="post-content" v-pre>
+              <p>陈硕老师书中提到的TCP网络编程本质论很简洁直接地归纳了网络编程需要做的事，许许多多网络编程中的坑都可以归纳到这个本质论内。</p>
+<!-- more -->
+<p>最近也在进一步的学习网络编程，偶然间再一次看到『TCP网络编程本质论』，突然觉得这个概括能将目前学到的东西进行很好的归类。所以现在也打算进行一个简单的归类和思考，不过自己目前还是缺乏很多的实战经验，很多东西不能面面俱到，但以后有了新的思考也会随时更新。</p>
+<h1 id="tcp网络编程本质论">TCP网络编程本质论</h1>
+<ul>
+<li>1 连接的建立</li>
+<li>2 连接的关闭</li>
+<li>3 消息到达</li>
+<li>3.5 消息发送完毕</li>
+</ul>
+<h2 id="连接的建立">连接的建立</h2>
+<h3 id="主动连接">主动连接</h3>
+<p>由于这方面主要偏向于客户端，这方面关注的还比较少...</p>
+<h3 id="被动连接">被动连接</h3>
+<p>服务端大多数都是被动连接的，要点是绑定监听套接字和accept得到一个新连接的socket。</p>
+<ul>
+<li><strong>1 端口的复用</strong><br>
+TIME_WAIT的问题相信很多人都会接触，也是UNP中强调的点。TIME_WAIT提高了TCP关闭连接的可靠性，但也带来了一个问题就是服务端应用在关闭后不能快速重启。当然解决的方法很简单，就是向socket设置SO_REUSEADDR，该设置能够让内核忽略我们端口绑定的TIME_WAIT状态的socket，直接建立新的监听套接字。因为设置这个选项后121.xx.xxx.xx与0.0.0.0内核将会区分开来，即使前者（连接套接字）进入TIME_WAIT状态，内核也会认为后者作为监听套接字是不相同的，就不会让bind失败。</li>
+</ul>
+<p>面对的这个问题的时候，其实不一定要把关注点放在怎么复用上，更多的是对TIME_WAIT这个状态的理解上。我们知道TIME_WAIT的作用之一就是确保对方能够收到ACK从而确保正常退出而不是重发多次ACK的请求。如果我们使用了SO_REUSEADDR并且重启了服务器会发生什么？很简单，重启之后服务器丢失了内核中曾经的链接信息，对于一个不认识的端口就是给予RST的回应，这样也能够确保对方赶紧完成退出的流程。这其实在UNP的第五章后半部分会提到，建议细细品味理解～</p>
+<p>提到SO_REUSEADDR就不得不会提到SO_REUSEPORT，后者是真正的意义上的端口服用，但是需要更多的设置，它需要每一个共用地址的套接字都要设定SO_REUSEPORT，而SO_REUSEADDR只需要后来尝试绑定的socket或者之前已经绑定的socket这两个其中一个设置就可以了。不过SO_REUSEPORT出现的比SO_REUSEPORT晚。</p>
+<p>SO_REUSEPORT有着非常好的作用。<strong>第一</strong>，我们可以同时设定多个监听套接字负责监听一个端口，在多进程处理中就可以每一个进程分配一个监听套接字，而以往的操作需要多个进程共用同一个监听套接字，这个带来最大的问题就是『惊群效应』，一个连接到来的时候，只有一个进程获取，其他的进程被叫醒了却啥也没捞着。而多个监听套接字就能很好的避免这个问题。 <strong>第二</strong>，内核会帮助我们完成负载均衡，它会帮我们挑选多个监听套接字中最合适的一个，非常方便。<strong>第三</strong>，SO_REUSEPORT也是自带安全机制的，只有effective-user-id相同的进程才能申请绑定同一个监听接口，不过我也不太了解，先放一放。</p>
+<ul>
+<li><strong>2.accept发生在三次握手的哪个阶段？</strong><br>
+答案是都有可能。也就是说，三次握手与你调不调用accept是没有关系的，当你listen完成的时候你就可以接收客户端的三次握手请求了。accept调用更有种生产者-消费者中消费者的角色，商品就是已完成握手的socket，商品充足的时候就可以按照自己的节奏消费，但是没有的时候就只能干等了。</li>
+</ul>
+<p>在这里就要提一句了，每一个监听套接字都有两个队列，一个是存储正在握手的连接，另一个就是存储已完成握手的连接，但他们都有固定大小，所以在许多连接到来的时候也会遇到一些困难。</p>
+<ul>
+<li><strong>3.一次请求的过多怎么办</strong><br>
+这个问题可以分为两个部分。
+<ul>
+<li><strong>文件描述符被耗尽</strong><br>
+这时候accept返回-1，同时errno被设置为EMFILE，代表的就是文件描述符被耗尽。<br>
+遇到这种情况呢，有些时候不管它就行了，就让多余的连接请求失败就好，但是如果你使用了IO复用，而且又是水平触发，那就不能忽略了。因为listen socket会一直为可读状态，但是你又一直读不出来，但是IO复用还是会因为它是可读的而直接返回，陷入一个busy loop的境地，这就很伤脑筋了呀！<br>
+不过方法还是有的，陈硕在书中也有介绍。其中一种方法，muduo中内置的方法，就是预留一个<code>fd=open(&quot;/dev/null/)</code>，有新连接到来的时候就使用这个fd去获取连接并关闭它再打开null。还有另外一种方法更简单，就是设定一个阈值，提前关闭连接。上述的方法都非常简单，再一次感叹前人的智慧！</li>
+<li><strong>监听套接字中的已完成队列已满</strong><br>
+如果已完成队列满了，即使完成了三次握手，该连接也有可能被无声地抛弃。这里还是推荐一篇很好的文章<a href="http://jm.taobao.org/2017/05/25/525-1/">关于TCP 半连接队列和全连接队列</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="连接的关闭">连接的关闭</h2>
+<h3 id="主动关闭">主动关闭</h3>
+<ul>
+<li><strong>TIME_WAIT</strong><br>
+根据socket的状态机，我们可以知道主动关闭的一方会进入TIME_WAIT状态。</li>
+</ul>
+<blockquote>
+<p>TIME_WAIT的作用：<br>
+1.确保客户端能够收到ACK。<br>
+2.确保在网络中游荡的消息能够在下一次连接建立之前消亡，以免影响下一次连接。<br>
+服务端很多时候会承担主动关闭的职责，例如HTTP服务器，数据库服务端都是在收到关闭消息后主动关闭，这里的原因还需要深究，但理解上可以是客户端对四元组的使用更加敏感，如果出现地址占用很容易影响客户的使用。<br>
+那么解决的方法有两个方向，一个是增大四元组的表示范围，二是进行相应的系统设置，让系统支持tcp时间戳。这些网上有很多，就不提了。</p>
+</blockquote>
+<ul>
+<li><strong>关闭时还有未发送的数据怎么办</strong><br>
+<code>close(fd)</code>内部有不同的发送方案，首先会有一个onoff选项和一个linger选项，这些参数依赖于socket的设定。</li>
+</ul>
+<blockquote>
+<p>如果onoff为0，代表内核采用缺省的方式，不阻塞的返回close，同时尽可能发送数据。<br>
+onoff为1，linger为0，代表直接丢弃未发送的数据，同时发送一个RST，这样自己也不会进入TIME_WAIT状态了。</p>
+</blockquote>
+<p>shutdown也是用来关闭socket，但是shutdown可以单单只关闭读写通道之一。但在muduo中其实没有用shutdown，虽然有个shutdown方法，但是他是在应用层实现关闭读通道，最后还是使用close关闭socket。muduo中确保了TcpConnection中的数据发送后才会关闭socket。</p>
+<ul>
+<li><strong>关闭空闲连接</strong><br>
+如何关闭空闲连接也是我们应该要考虑的，一般来说是使用定时器，但反复修改、查找定时器势必会影响性能。</li>
+</ul>
+<h3 id="被动关闭">被动关闭</h3>
+<p>被动关闭会进入一个CLOSE_WAIT的状态，如果被动关闭的一方有许多CLOSE_WAIT连接，那就意味着被动的一方忘记执行close了，或者说某个线程因为死锁原因未能运行到close处。</p>
+<h2 id="消息的到达">消息的到达</h2>
+<p>这应该是所有任务中最重要的事了。</p>
+<h3 id="阻塞与非阻塞">阻塞与非阻塞</h3>
+<p>这决定了整个程序的风格。一般来说非阻塞会更加的高效，但是由于你不知道接下来的数据会在什么时候到达，所以为每个连接分配一个缓存存取到达的数据。</p>
+<h3 id="消息的分割">消息的分割</h3>
+<p>使用TCP传输，意味着我们需要认定数据是按流的方式传输的，所以使用TCP的程序应该按照自己的方式切割数据。最简单的方法就是在每一次消息发送前在前面放一个长度表示消息的长度，接收方根据已到达消息的长度和头预设的长度决定是否要取出数据。</p>
+<h2 id="消息的发送">消息的发送</h2>
+<p>在http中服务器收到消息总是需要返回响应，是否需要回复而且需要回复什么信息都是值得思考的。<br>
+而且，如何确保消息发送的顺序是可控的？也就是如何保证不同消息不会交错。<br>
+如何保证主动关闭后消息都能发出？<br>
+这些都是需要在应用层解决的事。</p>
+<p>不知不觉写了许多内容，但是写到后面实在是有些精力不足了。以后有机会会继续丰富后半部分的。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://dehaoye.github.io/tag/VcmLfJLWm/" class="tag">
+                    网络编程
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://dehaoye.github.io/post/crtp-qi-yi-di-gui-mo-ban-mo-shi/">
+                  <h3 class="post-title">
+                    CRTP-奇异递归模板模式
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>
