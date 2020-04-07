@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://dehaoye.github.io</id>
     <title>DehaoYe</title>
-    <updated>2020-04-07T06:44:56.633Z</updated>
+    <updated>2020-04-07T09:27:28.972Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://dehaoye.github.io"/>
     <link rel="self" href="https://dehaoye.github.io/atom.xml"/>
@@ -10,6 +10,17 @@
     <logo>https://dehaoye.github.io/images/avatar.png</logo>
     <icon>https://dehaoye.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, DehaoYe</rights>
+    <entry>
+        <title type="html"><![CDATA[从muduo中看程序设计]]></title>
+        <id>https://dehaoye.github.io/post/cong-muduo-zhong-kan-cheng-xu-she-ji/</id>
+        <link href="https://dehaoye.github.io/post/cong-muduo-zhong-kan-cheng-xu-she-ji/">
+        </link>
+        <updated>2020-03-31T07:02:34.000Z</updated>
+        <summary type="html"><![CDATA[<p>持续更新中，吃透一份源码比游览百份源码更重要</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>持续更新中，吃透一份源码比游览百份源码更重要</p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[网络编程的总结与思考]]></title>
         <id>https://dehaoye.github.io/post/wang-luo-bian-cheng-de-zong-jie-yu-si-kao/</id>
@@ -33,7 +44,7 @@
 ]]></content>
     </entry>
     <entry>
-        <title type="html"><![CDATA[序]]></title>
+        <title type="html"><![CDATA[序言]]></title>
         <id>https://dehaoye.github.io/post/xu/</id>
         <link href="https://dehaoye.github.io/post/xu/">
         </link>
