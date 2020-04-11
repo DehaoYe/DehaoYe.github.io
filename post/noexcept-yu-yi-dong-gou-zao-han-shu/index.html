@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>noexcept与移动构造函数 | DehaoYe</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://dehaoye.github.io/favicon.ico?v=1586630709108">
+<link rel="stylesheet" href="https://dehaoye.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="今天面试被问到了这个点，查了查资料感觉收获颇丰，对C++的异常处理机制和移动语义的理解更加深刻了！
+移动语义
+相信很多人都写过移动构造函数。但是为什么要提供移动语义呢？在我看来，是为了丰富对象的拷贝方式，当编译器能够支持移动语义的某种语法时..." />
+    <meta name="keywords" content="" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://dehaoye.github.io">
+        <img src="https://dehaoye.github.io/images/avatar.png?v=1586630709108" class="site-logo">
+        <h1 class="site-title">DehaoYe</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      简单的记录，系统的思考
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://dehaoye.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">noexcept与移动构造函数</h2>
+            <div class="post-date">2020-04-12</div>
+            
+            <div class="post-content" v-pre>
+              <p>今天面试被问到了这个点，查了查资料感觉收获颇丰，对C++的异常处理机制和移动语义的理解更加深刻了！</p>
+<h2 id="移动语义">移动语义</h2>
+<p>相信很多人都写过移动构造函数。但是为什么要提供移动语义呢？在我看来，是为了丰富对象的拷贝方式，当编译器能够支持移动语义的某种语法时，我们就可以提供另外一种构造函数风格了，一般来说这种风格有点像浅拷贝，但是不是拷贝，因为对象的所有权被交换了。</p>
+<blockquote>
+<p>使用移动构造函数还需要分配新的内存吗？<br>
+当然是需要的。毕竟是构造函数，你还是将原来对象的所有权保存在这个新建的内存上的。</p>
+</blockquote>
+<blockquote>
+<p>那所有权是什么？<br>
+就是一个对象所含的成员。当我们是使用这个对象的移动构造函数时，就会自动调用成员的移动移动构造函数，让它们在新内存中构造。</p>
+</blockquote>
+<blockquote>
+<p>那假如一个类中全是基本类型，那么拷贝和移动有区别吗？<br>
+没有区别的。对于基本类型，两者都是相同的，意味着拷贝与移动的语义其实还是需要我们程序员自己设计，在低层看来其实都是在构造的时候进行数据的拷贝。</p>
+</blockquote>
+<p>举个简单的例子。例如你有一个对象，对象中的成员是一个指针，这个指针指向一大块内存</p>
+<ul>
+<li>拷贝构造函数：复制一个指针，复制一大块内存。</li>
+<li>移动构造函数：复制一个指针，这个指针指向内存，同时原来的指针设为空。</li>
+<li>理想的移动（C++不支持）：指针也不需要获取，对象访问成员时自动访问旧对象的指针。</li>
+</ul>
+<h2 id="noexcept">noexcept</h2>
+<p>一个函数如果用noexcept修饰，表示它在执行过程中不会抛出异常，如果有异常，直接终止程序。</p>
+<blockquote>
+<p>抛出异常的作用：1.抛出异常不会影响我们正常的返回值，我们不需要反复修改返回函数； 2.强迫调用调用者处理异常，而不是像错误码一样忽略。</p>
+</blockquote>
+<p>抛出异常意味着程序的控制流将会改变，此时可能会跳到上一层函数的try catch中，这就这个函数会提前结束。让我们看看在一些函数中抛出异常</p>
+<ul>
+<li>构造函数：在构造函数中，当你分配完内存后抛出异常，这时候你的实例其实是没有构造成功的，析构函数也就不会被调用，也就意味着你申请到的内存是得不到释放的。</li>
+<li>析构函数：标准规定是不能抛弃异常的。因为异常处理机制中，一个优势就在于C++异常模型有责任清楚那些由于出现异常所导致的已经失效了的对象（即对象超出了作用域）。这样看，异常处理机制是依赖与析构函数的，如果析构函数中出现异常，那么又会触发异常处理机制，就会陷入一个恶性循环的怪群。</li>
+</ul>
+<blockquote>
+<p>那么移动构造函数中我们为什么要显式声明noexcept呢？</p>
+</blockquote>
+<p>1  我们先说说为什么移动构造需要noexcept。这里主要参考了引用<a href="https://www.jianshu.com/p/4848f331f8fd">1</a>。在STL的容器调整大小的时候，比如动态扩容的时候，往往是需要将当前已有的元素移动到另外的区域，这时候就会使用移动构造函数。如果你在移动一个元素时发生异常了并且抛出了，那么你的程序执行顺序就会改变（往上层跳转），意味着你后续需要移动的元素就被遗忘了。这种错误在STL中是不允许的，STL需要保证运行的可靠性。<br>
+2  那为什么要显式呢？因为C++标准中没有规定构造函数必须条件noexcept，所以当你没添加noexcept的时候，那么就会调用拷贝构造函数而不是移动构造函数了。</p>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://dehaoye.github.io/post/cong-muduo-zhong-kan-cheng-xu-she-ji/">
+                  <h3 class="post-title">
+                    从muduo中看程序设计
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>
