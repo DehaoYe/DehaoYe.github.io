@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://dehaoye.github.io/favicon.ico?v=1586630985963">
+<link rel="shortcut icon" href="https://dehaoye.github.io/favicon.ico?v=1586631587502">
 <link rel="stylesheet" href="https://dehaoye.github.io/styles/main.css">
 
 
@@ -20,7 +20,7 @@
 
     <meta name="description" content="今天面试被问到了这个点，查了查资料感觉收获颇丰，对C++的异常处理机制和移动语义的理解更加深刻了！
 移动语义
-相信很多人都写过移动构造函数。但是为什么要提供移动语义呢？在我看来，是为了丰富对象的拷贝方式，当编译器能够支持移动语义的某种语法时..." />
+相信很多人都写过移动构造函数。但是为什么要提供移动语义呢？在我看来，是为了丰富对象的拷贝方式，当编译器能够识别移动构造函数的签名时..." />
     <meta name="keywords" content="cpp" />
   </head>
   <body>
@@ -30,7 +30,7 @@
   <div class="top-container" data-aos="fade-right">
     <div class="top-header-container">
       <a class="site-title-container" href="https://dehaoye.github.io">
-        <img src="https://dehaoye.github.io/images/avatar.png?v=1586630985963" class="site-logo">
+        <img src="https://dehaoye.github.io/images/avatar.png?v=1586631587502" class="site-logo">
         <h1 class="site-title">DehaoYe</h1>
       </a>
       <div class="menu-btn" @click="menuVisible = !menuVisible">
@@ -98,7 +98,7 @@
             <div class="post-content" v-pre>
               <p>今天面试被问到了这个点，查了查资料感觉收获颇丰，对C++的异常处理机制和移动语义的理解更加深刻了！</p>
 <h2 id="移动语义">移动语义</h2>
-<p>相信很多人都写过移动构造函数。但是为什么要提供移动语义呢？在我看来，是为了丰富对象的拷贝方式，当编译器能够支持移动语义的某种语法时，我们就可以提供另外一种构造函数风格了，一般来说这种风格有点像浅拷贝，但是不是拷贝，因为对象的所有权被交换了。</p>
+<p>相信很多人都写过移动构造函数。但是为什么要提供移动语义呢？在我看来，是为了丰富对象的拷贝方式，当编译器能够识别移动构造函数的签名时，我们就可以提供另外一种构造函数的风格了，一般来说这种风格有点像浅拷贝，但是不是拷贝，因为对象的所有权被交换了，而具体的逻辑可以让程序员根据不同的类做出不同的判断。</p>
 <blockquote>
 <p>使用移动构造函数还需要分配新的内存吗？<br>
 当然是需要的。毕竟是构造函数，你还是将原来对象的所有权保存在这个新建的内存上的。</p>
