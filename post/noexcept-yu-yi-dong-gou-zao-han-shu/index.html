@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://dehaoye.github.io/favicon.ico?v=1586630758919">
+<link rel="shortcut icon" href="https://dehaoye.github.io/favicon.ico?v=1586630985963">
 <link rel="stylesheet" href="https://dehaoye.github.io/styles/main.css">
 
 
@@ -30,7 +30,7 @@
   <div class="top-container" data-aos="fade-right">
     <div class="top-header-container">
       <a class="site-title-container" href="https://dehaoye.github.io">
-        <img src="https://dehaoye.github.io/images/avatar.png?v=1586630758919" class="site-logo">
+        <img src="https://dehaoye.github.io/images/avatar.png?v=1586630985963" class="site-logo">
         <h1 class="site-title">DehaoYe</h1>
       </a>
       <div class="menu-btn" @click="menuVisible = !menuVisible">
@@ -130,7 +130,7 @@
 <blockquote>
 <p>那么移动构造函数中我们为什么要显式声明noexcept呢？</p>
 </blockquote>
-<p>1  我们先说说为什么移动构造需要noexcept。这里主要参考了引用<a href="https://www.jianshu.com/p/4848f331f8fd">1</a>。在STL的容器调整大小的时候，比如动态扩容的时候，往往是需要将当前已有的元素移动到另外的区域，这时候就会使用移动构造函数。如果你在移动一个元素时发生异常了并且抛出了，那么你的程序执行顺序就会改变（往上层跳转），意味着你后续需要移动的元素就被遗忘了。这种错误在STL中是不允许的，STL需要保证运行的可靠性。<br>
+<p>1  我们先说说为什么移动构造需要noexcept。这里主要参考了引用<a href="https://www.jianshu.com/p/4848f331f8fd">1</a>。在STL的容器调整大小的时候，比如动态扩容的时候，往往是需要将当前已有的元素移动到另外的区域，这时候就会使用移动构造函数。如果你在移动一个元素时发生异常了并且抛出了，那么当下正在移动的数据就出错了，也就意味着你调整大小这个行为反而让原始数据出错了！这种错误在STL中是不允许的，STL需要保证运行的可靠性。<br>
 2  那为什么要显式呢？因为C++标准中没有规定构造函数必须条件noexcept，所以当你没添加noexcept的时候，那么就会调用拷贝构造函数而不是移动构造函数了。</p>
 
             </div>
