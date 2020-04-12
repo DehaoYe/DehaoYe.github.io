@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://dehaoye.github.io</id>
     <title>DehaoYe</title>
-    <updated>2020-04-12T05:43:55.065Z</updated>
+    <updated>2020-04-12T15:33:18.072Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://dehaoye.github.io"/>
     <link rel="self" href="https://dehaoye.github.io/atom.xml"/>
@@ -10,6 +10,17 @@
     <logo>https://dehaoye.github.io/images/avatar.png</logo>
     <icon>https://dehaoye.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, DehaoYe</rights>
+    <entry>
+        <title type="html"><![CDATA[[C++元编程]如何在编译期判断一个类具有某个方法？]]></title>
+        <id>https://dehaoye.github.io/post/cyuan-bian-cheng-ru-he-zai-bian-yi-qi-pan-duan-yi-ge-lei-ju-you-mou-ge-fang-fa/</id>
+        <link href="https://dehaoye.github.io/post/cyuan-bian-cheng-ru-he-zai-bian-yi-qi-pan-duan-yi-ge-lei-ju-you-mou-ge-fang-fa/">
+        </link>
+        <updated>2020-04-12T06:26:32.000Z</updated>
+        <summary type="html"><![CDATA[<p>模板的艺术啊！</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>模板的艺术啊！</p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[noexcept与移动构造函数]]></title>
         <id>https://dehaoye.github.io/post/noexcept-yu-yi-dong-gou-zao-han-shu/</id>

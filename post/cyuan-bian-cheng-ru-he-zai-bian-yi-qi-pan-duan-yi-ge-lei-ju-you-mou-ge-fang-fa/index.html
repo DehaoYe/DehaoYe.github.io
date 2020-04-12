@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>[C++元编程]如何在编译期判断一个类具有某个方法？ | DehaoYe</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://dehaoye.github.io/favicon.ico?v=1586705590406">
+<link rel="stylesheet" href="https://dehaoye.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="模板的艺术啊！
+
+面试被问到这个问题，当场就慌了。一直以为元编程很少会用，但最近被问到的频率都比较大，感觉需要加强这方面的基础。很久前有接触过这个概念，但那时的知识储备还是太少了，虽然已经很努力了，但还是领略到它的用处和思想。
+元编程与模板..." />
+    <meta name="keywords" content="cpp" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://dehaoye.github.io">
+        <img src="https://dehaoye.github.io/images/avatar.png?v=1586705590406" class="site-logo">
+        <h1 class="site-title">DehaoYe</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      简单的记录，系统的思考
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://dehaoye.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">[C++元编程]如何在编译期判断一个类具有某个方法？</h2>
+            <div class="post-date">2020-04-12</div>
+            
+            <div class="post-content" v-pre>
+              <p>模板的艺术啊！</p>
+<!-- more -->
+<p>面试被问到这个问题，当场就慌了。一直以为元编程很少会用，但最近被问到的频率都比较大，感觉需要加强这方面的基础。很久前有接触过这个概念，但那时的知识储备还是太少了，虽然已经很努力了，但还是领略到它的用处和思想。</p>
+<h2 id="元编程与模板">元编程与模板</h2>
+<p>模板能够帮助我们生成代码。根据不同的模板参数就可以生成不同的模板代码，大大减少我们写代码的冗余。</p>
+<p>既然模板能够生成代码，那么我们也就需要操控编译器让它什么时候什么情况下生成什么代码，这就是编程。但是我们生成的是，所以我们就用元编程进行区分。</p>
+<h2 id="为什么需要判断某个类里具有某个方法呢">为什么需要判断某个类里具有某个方法呢？</h2>
+<p>在<a href="https://dehaoye.github.io/post/crtp-qi-yi-di-gui-mo-ban-mo-shi/">CRTP</a>中，我们提到模板可以帮助我们组合某些已有的方法。但是如果我们这个类缺少已有的方法，我们可能就需要调用其他模板了，但是为了不需要让使用库的人操心这些细节，我们还会使用这个模板名字，就类似于函数重载一样的性质。所以我们需要判断某个方法是否存在来选择模板。</p>
+<h2 id="sfinae">SFINAE</h2>
+<p>通过SFINAE我们可以知道编译器是基于什么原则选择特定的模板的。具体的可以参考(C++ 模板特性之 SFINAE)[http://kaiyuan.me/2018/05/08/sfinae/]。</p>
+<h2 id="如何判断">如何判断</h2>
+<pre><code class="language-cpp">template&lt;typename U&gt;  // （1）
+struct check {
+    template &lt;typename T, void (T::*f)() = &amp;T::hello&gt; （2）
+    static constexpr bool check_(T *) { return true; } （3）
+
+    static constexpr bool check_(...) { return false; } （4）
+
+    static const bool ret = check_(static_cast&lt;U *&gt;(nullptr));（5）
+}
+</code></pre>
+<p>我们先看看（2），这里我们希望当模板参数满足一定条件的时候就返回true。那是什么条件？就是指针的数值是某个常量！没错就是某个常量，这个常量就是我们希望检测的方法在内存中的位置，我们希望匹配参数的值一定要是这个值。要特别注意这里指向类成员函数的指针应该怎么写。</p>
+<p>（3）行这里使用了T*而不是T，这是为什么呢？这是因为constexpr只有在参数在编译期可推导时才会在编译期执行，如果使用非指针类型，意味着我们只能在对象构造后才能进行判断。这也是为什么（5）中传递的是nullptr，显然使用常数我们就可以在编译期处理了。</p>
+<p>（1）中为什么需要一个U，因为我们需要一个转换触发模板的选择过程。</p>
+<p>（4）中的<code>...</code>代表了任意匹配。</p>
+<h2 id="一个完整的例子">一个完整的例子</h2>
+<pre><code class="language-cpp">template&lt;typename U&gt;
+struct check {
+    template &lt;typename T, void (T::*f)() = &amp;T::hello&gt;
+    static constexpr bool check_(T *) { return true; }
+
+    static constexpr bool check_(...) { return false; }
+
+    static const bool ret = check_(static_cast&lt;U *&gt;(nullptr));
+};
+
+struct Hello {
+    void hello() {}
+};
+
+struct Bye {
+};
+
+template&lt;typename T, 
+         typename std::enable_if&lt;check&lt;T&gt;::ret, T*&gt;::type* = nullptr&gt;
+void imple() {
+    cout &lt;&lt; &quot;this T has hello&quot; &lt;&lt; endl;
+}
+
+template&lt;typename T,
+         typename std::enable_if&lt;!check&lt;T&gt;::ret, T*&gt;::type* = nullptr&gt;
+void imple() {
+    cout &lt;&lt; &quot;this T has not hello&quot; &lt;&lt; endl;
+}
+
+int main() {
+    imple&lt;Hello&gt;();
+    imple&lt;Bye&gt;();
+    return 0;
+}
+</code></pre>
+<p>注意这里我们使用了<code>enable_if</code>和<code>...type* = nullptr</code>，因为如果T不满足条件后半段语句就会出错，就意味着编译器会为我们寻找下一个满足要求的模板，而使用nullptr纯粹是为了能够使用一个编译期常量。注意两个模板都要<code>enable_if</code>，如果一种情况同时满足两个模板，编译器就会报错，因为它不知道应该选择哪一个模板。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://dehaoye.github.io/tag/PlUe8uvLg/" class="tag">
+                    cpp
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://dehaoye.github.io/post/noexcept-yu-yi-dong-gou-zao-han-shu/">
+                  <h3 class="post-title">
+                    noexcept与移动构造函数
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>
